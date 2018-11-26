@@ -30,7 +30,7 @@ APPNAME = Steem
 APP_LOAD_PARAMS += --appFlags 0x40 --path "44'/135'" --curve secp256k1 $(COMMON_LOAD_PARAMS) --delete 
 
 #prepare hsm generation
-ICONNAME=nanos_app_eos.gif
+ICONNAME=nanos_app_steem.gif
 
 ################
 # Default rule #

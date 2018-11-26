@@ -18,13 +18,15 @@
 ********************************************************************************/
 """
 
-import binascii
+from binascii import hexlify, unhexlify
 import json
 import struct
 from steemBase import Transaction
 from ledgerblue.comm import getDongle
 import argparse
 
+from steem.transactionbuilder import TransactionBuilder
+from steembase import operations
 
 def parse_bip32_path(path):
     if len(path) == 0:
@@ -49,17 +51,19 @@ if args.path is None:
     args.path = "44'/135'/0'/0/0"
 
 if args.file is None:
-    args.file = 'steem_transaction_transfer.json'
+    args.file = 'steem_transaction_vote.json'
+    # args.file = 'steem_transaction_transfer.json'
 
 donglePath = parse_bip32_path(args.path)
 pathSize = len(donglePath) / 4
 
 with file(args.file) as f:
     obj = json.load(f)
+
     tx = Transaction.parse(obj)
     tx_raw = tx.encode()
     signData = tx_raw
-    print binascii.hexlify(tx_raw)
+    print hexlify(tx_raw)
 
     dongle = getDongle(True)
     offset = 0
@@ -81,4 +85,4 @@ with file(args.file) as f:
 
         offset += len(chunk)
         result = dongle.exchange(bytes(apdu))
-        print binascii.hexlify(result)
+        print hexlify(result)
