@@ -21,7 +21,7 @@
 import binascii
 import json
 import struct
-from eosBase import Transaction
+from steemBase import Transaction
 from ledgerblue.comm import getDongle
 import argparse
 
@@ -49,7 +49,7 @@ if args.path is None:
     args.path = "44'/135'/0'/0/0"
 
 if args.file is None:
-    args.file = 'transaction.json'
+    args.file = 'steem_transaction_transfer.json'
 
 donglePath = parse_bip32_path(args.path)
 pathSize = len(donglePath) / 4
@@ -73,11 +73,11 @@ with file(args.file) as f:
 
         if first:
             totalSize = len(donglePath) + 1 + len(chunk)
-            apdu = "D4040000".decode('hex') + chr(totalSize) + chr(pathSize) + donglePath + chunk
+            apdu = "87040000".decode('hex') + chr(totalSize) + chr(pathSize) + donglePath + chunk
             first = False
         else:
             totalSize = len(chunk)
-            apdu = "D4048000".decode('hex') + chr(totalSize) + chunk
+            apdu = "87048000".decode('hex') + chr(totalSize) + chunk
 
         offset += len(chunk)
         result = dongle.exchange(bytes(apdu))

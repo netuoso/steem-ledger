@@ -1,0 +1,20 @@
+{
+  "ref_block_num": 26008,
+  "ref_block_prefix": 695883282,
+  "expiration": "2018-11-26T06:06:21",
+  "operations": [[
+      "unknown_op",{
+        "first_column": "first_value",
+        "second_column": "second_value",
+        "third_column": "third_value"
+      }
+    ]
+  ],
+  "extensions": [],
+  "signatures": [
+    "1f63cc4f4250552181d837f3c295ea377dee3425de0a2a9f9a2f3d87c0932a38466687aaa2ae208d2539704b5e29b33afa52756959abd32c445bc0c0887687182b"
+  ],
+  "transaction_id": "b16ba025f653d7a382d00701d4fcc77673bee10d",
+  "block_num": 0,
+  "transaction_num": 0
+}
