@@ -9,3 +9,4 @@ src/glyphs.h
 test/
 **/*.pyc
 **/._*.*
+.DS_Store
