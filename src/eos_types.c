@@ -199,9 +199,9 @@ uint32_t compressed_public_key_to_wif(uint8_t *publicKey, uint32_t keyLength, ch
     os_memmove(temp + 33, check, 4);
     
     os_memset(out, 0, outLength);
-    out[0] = 'E';
-    out[1] = 'O';
-    out[2] = 'S';
+    out[0] = 'S';
+    out[1] = 'T';
+    out[2] = 'M';
     uint32_t addressLen = outLength - 3;
     b58enc(temp, sizeof(temp), out + 3, &addressLen);
     if (addressLen + 3 >= outLength) {
