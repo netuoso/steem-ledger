@@ -22,12 +22,12 @@ include $(BOLOS_SDK)/Makefile.defines
 
 
 APPVERSION_M=1
-APPVERSION_N=1
+APPVERSION_N=0
 APPVERSION_P=0
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
 
-APPNAME = Eos
-APP_LOAD_PARAMS += --appFlags 0x40 --path "44'/194'" --curve secp256k1 $(COMMON_LOAD_PARAMS) 
+APPNAME = Steem
+APP_LOAD_PARAMS += --appFlags 0x40 --path "44'/135'" --curve secp256k1 $(COMMON_LOAD_PARAMS) 
 
 #prepare hsm generation
 ICONNAME=nanos_app_eos.gif

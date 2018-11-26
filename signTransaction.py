@@ -46,7 +46,7 @@ parser.add_argument('--file', help="Transaction in JSON format")
 args = parser.parse_args()
 
 if args.path is None:
-    args.path = "44'/194'/0'/0/0"
+    args.path = "44'/135'/0'/0/0"
 
 if args.file is None:
     args.file = 'transaction.json'
