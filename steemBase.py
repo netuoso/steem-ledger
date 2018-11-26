@@ -18,13 +18,12 @@
 ********************************************************************************/
 """
 
-from asn1 import Encoder, Numbers
-from datetime import datetime
+import time
+from calendar import timegm
 import struct
-import binascii
+from binascii import hexlify, unhexlify
 from base58 import b58decode 
-import hashlib
-
+from operation_ids import operations
 
 class Transaction:
     def __init__(self):
@@ -101,6 +100,15 @@ class Transaction:
         data = struct.pack('Q', amount)
         data += struct.pack('Q', sym)
         return data
+
+    @staticmethod
+    def parse_vote(data):
+        parameters = Transaction.pack_fc_uint(len(data["voter"])) + bytes(data["voter"])
+        parameters += Transaction.pack_fc_uint(len(data["author"])) + bytes(data["author"])
+        parameters += Transaction.pack_fc_uint(len(data["permlink"])) + bytes(data["permlink"])
+        parameters += struct.pack("<h", int(data["weight"]))
+
+        return parameters
 
     @staticmethod
     def parse_transfer(data):
@@ -254,90 +262,36 @@ class Transaction:
         tx = Transaction()
         tx.json = json
 
-        tx.chain_id = binascii.unhexlify(json['chain_id'])
+        tx.chain_id = unhexlify("0" * int(256 / 4))
 
-        body = json['transaction']
+        tx.expiration = struct.pack("<I", timegm(time.strptime((json["expiration"] + "UTC"), '%Y-%m-%dT%H:%M:%S%Z')))
+        tx.ref_block_num = struct.pack('H', json['ref_block_num'])
+        tx.ref_block_prefix = struct.pack('I', json['ref_block_prefix'])
 
-        expiration = int(datetime.strptime(body['expiration'], '%Y-%m-%dT%H:%M:%S').strftime("%s"))
-        tx.expiration = struct.pack('I', expiration)
-        tx.ref_block_num = struct.pack('H', body['ref_block_num'])
-        tx.ref_block_prefix = struct.pack('I', body['ref_block_prefix'])
-        tx.net_usage_words = struct.pack('B', body['net_usage_words'])
-        tx.max_cpu_usage_ms = struct.pack('B', body['max_cpu_usage_ms'])
-        tx.delay_sec = struct.pack('B', body['delay_sec'])
+        tx.op_data = Transaction.pack_fc_uint(len(json['operations']))
+        for op in json['operations']:
+            tx.op_data += Transaction.pack_fc_uint(operations[op[0]])
+            if op[0] == 'transfer':
+                tx.op_data += Transaction.parse_transfer(op[1])
+            elif op[0] == 'vote':
+                tx.op_data += Transaction.parse_vote(op[1])
+            else:
+                tx.op_data += Transaction.parse_unknown(op[1])
 
-        tx.ctx_free_actions_size = struct.pack('B', len(body['context_free_actions']))
-        tx.actions_size = struct.pack('B', len(body['actions']))
-
-        action = body['actions'][0]
-        tx.account = Transaction.name_to_number(action['account'])
-        tx.name = Transaction.name_to_number(action['name'])
-
-        tx.auth_size = struct.pack('B', len(action['authorization']))
-        tx.auth = []
-        for auth in action['authorization']:
-            tx.auth.append((Transaction.name_to_number(auth['actor']), Transaction.name_to_number(auth['permission'])))
-
-        data = action['data']
-        if action['name'] == 'transfer':
-            parameters = Transaction.parse_transfer(data)
-        elif action['name'] == 'voteproducer':
-            parameters = Transaction.parse_vote_producer(data)
-        elif action['name'] == 'buyram':
-            parameters = Transaction.parse_buy_ram(data)
-        elif action['name'] == 'buyrambytes':
-            parameters = Transaction.parse_buy_rambytes(data)
-        elif action['name'] == 'sellram':
-            parameters = Transaction.parse_sell_ram(data)
-        elif action['name'] == 'updateauth':
-            parameters = Transaction.parse_update_auth(data)
-        elif action['name'] == 'deleteauth':
-            parameters = Transaction.parse_delete_auth(data)
-        elif action['name'] == 'refund':
-            parameters = Transaction.parse_refund(data)
-        elif action['name'] == 'linkauth':
-            parameters = Transaction.parse_link_auth(data)
-        elif action['name'] == 'unlinkauth':
-            parameters = Transaction.parse_unlink_auth(data)
-        else:
-            parameters = Transaction.parse_unknown(data)
-
-        tx.data_size = Transaction.pack_fc_uint(len(parameters))
-        tx.data = parameters
-        tx.tx_ext = struct.pack('B', len(body['transaction_extensions']))
-        tx.cfd = binascii.unhexlify('00' * 32)
-
-        sha = hashlib.sha256()
-        sha.update(tx.data_size)
-        sha.update(tx.data)
-        print 'Argument checksum ' +  sha.hexdigest()
+        tx.ex_data = Transaction.pack_fc_uint(len(json['extensions']))
+        for ext in json['extensions']:
+            print ext
+            # TODO: Implement
+            # tx.ex_data += ext
 
         return tx
 
     def encode(self):
-        encoder = Encoder()
+        buf = b""
+        buf += self.ref_block_num
+        buf += self.ref_block_prefix
+        buf += self.expiration
+        buf += self.op_data
+        buf += self.ex_data
 
-        encoder.start()
-        encoder.write(self.chain_id, Numbers.OctetString)
-        encoder.write(self.expiration, Numbers.OctetString)
-        encoder.write(self.ref_block_num, Numbers.OctetString)
-        encoder.write(self.ref_block_prefix, Numbers.OctetString)
-        encoder.write(self.net_usage_words, Numbers.OctetString)
-        encoder.write(self.max_cpu_usage_ms, Numbers.OctetString)
-        encoder.write(self.delay_sec, Numbers.OctetString)
-
-        encoder.write(self.ctx_free_actions_size, Numbers.OctetString)
-        encoder.write(self.actions_size, Numbers.OctetString)
-        encoder.write(self.account, Numbers.OctetString)
-        encoder.write(self.name, Numbers.OctetString)
-        encoder.write(self.auth_size, Numbers.OctetString)
-        for auth in self.auth:
-            (auth_actor, permission) = auth
-            encoder.write(auth_actor, Numbers.OctetString)
-            encoder.write(permission, Numbers.OctetString)
-        encoder.write(self.data_size, Numbers.OctetString)
-        encoder.write(self.data, Numbers.OctetString)
-        encoder.write(self.tx_ext, Numbers.OctetString)
-        encoder.write(self.cfd, Numbers.OctetString)
-
-        return encoder.output()
+        return buf
