@@ -138,7 +138,7 @@ static void decodeTag(uint8_t byte, uint8_t *cls, uint8_t *type, uint8_t *nr) {
  * tlv buffer is 5 bytes long. First byte is used for tag.
  * Next, up to four bytes could be used to to encode length.
 */
-bool tlvTryDecode(uint8_t *buffer, uint32_t bufferLength, uint32_t *fieldLenght, bool *valid) {
+bool tlvTryDecode(uint8_t *buffer, uint32_t bufferLength, uint32_t *fieldLength, bool *valid) {
     uint8_t class, type, number;
     decodeTag(*buffer, &class, &type, &number);
     
@@ -181,7 +181,7 @@ bool tlvTryDecode(uint8_t *buffer, uint32_t bufferLength, uint32_t *fieldLenght,
     } else {
         length = byte;
     }
-    *fieldLenght = length;
+    *fieldLength = length;
     *valid = true;
 
     return true;

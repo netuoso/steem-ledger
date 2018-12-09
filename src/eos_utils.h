@@ -30,7 +30,7 @@ char* ui64toa(uint64_t i, char b[]);
 
 bool tlvTryDecode(uint8_t *buffer,
                   uint32_t bufferLength,
-                  uint32_t *fieldLenght,
+                  uint32_t *fieldLength,
                   bool *valid);
 
 unsigned char check_canonical(uint8_t *rs);
