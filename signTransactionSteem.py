@@ -25,9 +25,6 @@ from steemBase import Transaction
 from ledgerblue.comm import getDongle
 import argparse
 
-from steem.transactionbuilder import TransactionBuilder
-from steembase import operations
-
 def parse_bip32_path(path):
     if len(path) == 0:
         return ""
@@ -68,9 +65,9 @@ with file(args.file) as f:
     dongle = getDongle(True)
     offset = 0
     first = True
-    singSize = len(signData)
-    while offset != singSize:
-        if singSize - offset > 200:
+    signSize = len(signData)
+    while offset != signSize:
+        if signSize - offset > 200:
             chunk = signData[offset: offset + 200]
         else:
             chunk = signData[offset:]
