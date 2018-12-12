@@ -19,6 +19,7 @@
 """
 
 import time
+import hashlib
 from calendar import timegm
 from asn1 import Encoder, Numbers
 import struct
@@ -263,12 +264,13 @@ class Transaction:
         tx = Transaction()
         tx.json = json
 
-        tx.chain_id = unhexlify("0" * int(256 / 4))
+        tx.chain_id = unhexlify("00" * 32)
 
         tx.expiration = struct.pack("<I", timegm(time.strptime((json["expiration"] + "UTC"), '%Y-%m-%dT%H:%M:%S%Z')))
         tx.ref_block_num = struct.pack('H', json['ref_block_num'])
         tx.ref_block_prefix = struct.pack('I', json['ref_block_prefix'])
 
+        # prefex operations with length
         tx.op_data = Transaction.pack_fc_uint(len(json['operations']))
         for op in json['operations']:
             tx.op_data += Transaction.pack_fc_uint(operations[op[0]])
@@ -279,11 +281,16 @@ class Transaction:
             else:
                 tx.op_data += Transaction.parse_unknown(op[1])
 
+        # prefix extensions with length
         tx.ex_data = Transaction.pack_fc_uint(len(json['extensions']))
         for ext in json['extensions']:
             print ext
             # TODO: Implement
             # tx.ex_data += ext
+
+        sha = hashlib.sha256()
+        sha.update(tx.op_data)
+        print 'Argument checksum ' +  sha.hexdigest()
 
         return tx
 

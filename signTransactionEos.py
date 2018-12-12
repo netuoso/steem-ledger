@@ -62,24 +62,24 @@ with file(args.file) as f:
     signData = tx_raw
     print binascii.hexlify(tx_raw)
 
-    dongle = getDongle(True)
-    offset = 0
-    first = True
-    singSize = len(signData)
-    while offset != singSize:
-        if singSize - offset > 200:
-            chunk = signData[offset: offset + 200]
-        else:
-            chunk = signData[offset:]
+    # dongle = getDongle(True)
+    # offset = 0
+    # first = True
+    # singSize = len(signData)
+    # while offset != singSize:
+    #     if singSize - offset > 200:
+    #         chunk = signData[offset: offset + 200]
+    #     else:
+    #         chunk = signData[offset:]
 
-        if first:
-            totalSize = len(donglePath) + 1 + len(chunk)
-            apdu = "87040000".decode('hex') + chr(totalSize) + chr(pathSize) + donglePath + chunk
-            first = False
-        else:
-            totalSize = len(chunk)
-            apdu = "87048000".decode('hex') + chr(totalSize) + chunk
+    #     if first:
+    #         totalSize = len(donglePath) + 1 + len(chunk)
+    #         apdu = "87040000".decode('hex') + chr(totalSize) + chr(pathSize) + donglePath + chunk
+    #         first = False
+    #     else:
+    #         totalSize = len(chunk)
+    #         apdu = "87048000".decode('hex') + chr(totalSize) + chunk
 
-        offset += len(chunk)
-        result = dongle.exchange(bytes(apdu))
-        print binascii.hexlify(result)
+    #     offset += len(chunk)
+    #     result = dongle.exchange(bytes(apdu))
+    #     print binascii.hexlify(result)

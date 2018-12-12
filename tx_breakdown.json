@@ -1,0 +1,20 @@
+0420 // tag - length (64)
+00000000000000000000
+00000000000000000000
+00000000000000000000
+0000 // chain id
+0402 // tag - length (2)
+bd8c // ref block num
+0404 // tag - length (4)
+5fe26f45 // ref block prefix
+0404 // tag - length (4)
+f179a857 // expiration
+0417 // tag - length (46)
+01 // number of opertions
+00 // vote operation
+057865726f63 // xeroc
+057865726f63 // xeroc
+06706973746f6e // piston
+1027 // weight (+1000)
+0401 // tag - length (1)
+00 // extension data

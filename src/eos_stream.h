@@ -34,12 +34,13 @@ typedef struct txProcessingContent_t {
 typedef enum txProcessingState_e {
     TLV_NONE = 0x0, 
     TLV_CHAIN_ID = 0x1,
-    TLV_DONE,
     TLV_HEADER_REF_BLOCK_NUM,
     TLV_HEADER_REF_BLOCK_PREFIX,
     TLV_HEADER_EXPIRATION,
-    TLV_ACTION_NAME,
-    TLV_TX_EXTENSION_LIST_SIZE
+    TLV_TX_OPERATIONS_SIZE,
+    TLV_TX_OPERATIONS_DATA,
+    TLV_TX_EXTENSION_LIST_SIZE,
+    TLV_DONE
 } txProcessingState_e;
 
 // typedef enum txProcessingState_e {

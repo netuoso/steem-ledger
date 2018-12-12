@@ -29,7 +29,7 @@ void parseTokenTransfer(uint8_t *buffer, uint32_t bufferLength, uint8_t argNum, 
         parseNameField(buffer, bufferLength, "To", arg, &read, &written);
     } else if (argNum == 2) {
         buffer += 2 * sizeof(name_t); bufferLength -= 2 * sizeof(name_t);
-        parseAssetField(buffer, bufferLength, "Quantity", arg, &read, &written);
+        parseAssetField(buffer, bufferLength, "Amount", arg, &read, &written);
     } else if (argNum == 3) {
         buffer += 2 * sizeof(name_t) + sizeof(asset_t); bufferLength -= 2 * sizeof(name_t) + sizeof(asset_t);
         parseStringField(buffer, bufferLength, "Memo", arg, &read, &written);

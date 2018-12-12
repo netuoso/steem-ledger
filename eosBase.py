@@ -310,7 +310,7 @@ class Transaction:
         sha = hashlib.sha256()
         sha.update(tx.data_size)
         sha.update(tx.data)
-        print 'Argument checksum ' +  sha.hexdigest()
+        # print 'Argument checksum ' +  sha.hexdigest()
 
         return tx
 
