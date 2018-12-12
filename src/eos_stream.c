@@ -508,11 +508,11 @@ static void processAuthorizationPermission(txProcessingContext_t *context) {
 
         // Start over reading Authorization data or move to the next state
         // if all authorization data have beed read
-        if (context->currentAutorizationIndex != context->currentAutorizationNumber) {
-            context->state = TLV_AUTHORIZATION_ACTOR;
-        } else {
+        // if (context->currentAutorizationIndex != context->currentAutorizationNumber) {
+        //     context->state = TLV_AUTHORIZATION_ACTOR;
+        // } else {
             context->state++;
-        }
+        // }
         context->processingField = false;
     }
 }
@@ -659,6 +659,8 @@ static parserStatus_e processTxInternal(txProcessingContext_t *context) {
                 context->tlvBuffer[context->tlvBufferPos++] =
                     readTxByte(context);
 
+                PRINTF(context->currentFieldLength);
+
                 decoded = tlvTryDecode(context->tlvBuffer, context->tlvBufferPos, 
                     &context->currentFieldLength, &valid);
 
@@ -686,69 +688,40 @@ static parserStatus_e processTxInternal(txProcessingContext_t *context) {
         }
         switch (context->state) {
         case TLV_CHAIN_ID:
-        case TLV_HEADER_EXPITATION:
         case TLV_HEADER_REF_BLOCK_NUM:
+            break;
         case TLV_HEADER_REF_BLOCK_PREFIX:
-        case TLV_HEADER_MAX_CPU_USAGE_MS:
-        case TLV_HEADER_MAX_NET_USAGE_WORDS:
-        case TLV_HEADER_DELAY_SEC:
-            processField(context);
             break;
-
-        case TLV_CFA_LIST_SIZE:
-            processZeroSizeField(context);
+        case TLV_HEADER_EXPIRATION:
             break;
-
-        case TLV_ACTION_LIST_SIZE:
-            processActionListSizeField(context);
-            break;
-
-        case TLV_ACTION_ACCOUNT:
-            processActionAccount(context);
-            break;
-
         case TLV_ACTION_NAME:
             processActionName(context);
             break;
-
-        case TLV_AUTHORIZATION_LIST_SIZE:
-            processAuthorizationListSizeField(context);
-            break;
-
-        case TLV_AUTHORIZATION_ACTOR:
-            processField(context);
-            break;
-
-        case TLV_AUTHORIZATION_PERMISSION:
-            processAuthorizationPermission(context);
-            break;
+        // case TLV_AUTHORIZATION_ACTOR:
+        //     processField(context);
+        //     break;
+        // case TLV_AUTHORIZATION_PERMISSION:
+        //     processAuthorizationPermission(context);
+        //     break;
         
-        case TLV_ACTION_DATA_SIZE:
-            if (isKnownAction(context) || context->dataAllowed == 0) {
-                processField(context);
-            } else {
-                processUnknownActionDataSize(context);
-            }
-            break;
-        
-        case TLV_ACTION_DATA:
-            if (isKnownAction(context)) {
-                processActionData(context);
-            } else if (context->dataAllowed == 1) {
-                processUnknownActionData(context);
-            } else {
-                PRINTF("UNKNOWN ACTION");
-                THROW(EXCEPTION);
-            }
-            break;
+        // case TLV_ACTION_DATA:
+        //     if (isKnownAction(context)) {
+        //         processActionData(context);
+        //     } else if (context->dataAllowed == 1) {
+        //         processUnknownActionData(context);
+        //     } else {
+        //         PRINTF("UNKNOWN ACTION");
+        //         THROW(EXCEPTION);
+        //     }
+        //     break;
 
         case TLV_TX_EXTENSION_LIST_SIZE:
             processZeroSizeField(context);
             break;
 
-        case TLV_CONTEXT_FREE_DATA:
-            processField(context);
-            break;
+        // case TLV_CONTEXT_FREE_DATA:
+        //     processField(context);
+        //     break;
 
         default:
             PRINTF("Invalid TLV decoder context\n");
@@ -820,6 +793,7 @@ parserStatus_e parseTx(txProcessingContext_t *context, uint8_t *buffer, uint32_t
             result = processTxInternal(context);
         }
         CATCH_OTHER(e) {
+            PRINTF(e);
             result = STREAM_FAULT;
         }
         FINALLY {

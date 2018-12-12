@@ -34,25 +34,36 @@ typedef struct txProcessingContent_t {
 typedef enum txProcessingState_e {
     TLV_NONE = 0x0, 
     TLV_CHAIN_ID = 0x1,
-    TLV_HEADER_EXPITATION,
+    TLV_DONE,
     TLV_HEADER_REF_BLOCK_NUM,
     TLV_HEADER_REF_BLOCK_PREFIX,
-    TLV_HEADER_MAX_NET_USAGE_WORDS,
-    TLV_HEADER_MAX_CPU_USAGE_MS,
-    TLV_HEADER_DELAY_SEC,
-    TLV_CFA_LIST_SIZE,
-    TLV_ACTION_LIST_SIZE,
-    TLV_ACTION_ACCOUNT,
+    TLV_HEADER_EXPIRATION,
     TLV_ACTION_NAME,
-    TLV_AUTHORIZATION_LIST_SIZE,
-    TLV_AUTHORIZATION_ACTOR,
-    TLV_AUTHORIZATION_PERMISSION,
-    TLV_ACTION_DATA_SIZE,
-    TLV_ACTION_DATA,
-    TLV_TX_EXTENSION_LIST_SIZE,
-    TLV_CONTEXT_FREE_DATA,
-    TLV_DONE
+    TLV_TX_EXTENSION_LIST_SIZE
 } txProcessingState_e;
+
+// typedef enum txProcessingState_e {
+//     TLV_NONE = 0x0, 
+//     TLV_CHAIN_ID = 0x1,
+//     TLV_HEADER_EXPITATION,
+//     TLV_HEADER_REF_BLOCK_NUM,
+//     TLV_HEADER_REF_BLOCK_PREFIX,
+//     TLV_HEADER_MAX_NET_USAGE_WORDS,
+//     TLV_HEADER_MAX_CPU_USAGE_MS,
+//     TLV_HEADER_DELAY_SEC,
+//     TLV_CFA_LIST_SIZE,
+//     TLV_ACTION_LIST_SIZE,
+//     TLV_ACTION_ACCOUNT,
+//     TLV_ACTION_NAME,
+//     TLV_AUTHORIZATION_LIST_SIZE,
+//     TLV_AUTHORIZATION_ACTOR,
+//     TLV_AUTHORIZATION_PERMISSION,
+//     TLV_ACTION_DATA_SIZE,
+//     TLV_ACTION_DATA,
+//     TLV_TX_EXTENSION_LIST_SIZE,
+//     TLV_CONTEXT_FREE_DATA,
+//     TLV_DONE
+// } txProcessingState_e;
 
 typedef struct txProcessingContext_t {
     txProcessingState_e state;
@@ -80,7 +91,8 @@ typedef struct txProcessingContext_t {
 typedef enum parserStatus_e {
     STREAM_PROCESSING,
     STREAM_FINISHED,
-    STREAM_FAULT
+    STREAM_FAULT,
+    DEBUG_UNKNOWN
 } parserStatus_e;
 
 void initTxContext(

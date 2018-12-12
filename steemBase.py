@@ -20,6 +20,7 @@
 
 import time
 from calendar import timegm
+from asn1 import Encoder, Numbers
 import struct
 from binascii import hexlify, unhexlify
 from base58 import b58decode 
@@ -287,11 +288,22 @@ class Transaction:
         return tx
 
     def encode(self):
-        buf = b""
-        buf += self.ref_block_num
-        buf += self.ref_block_prefix
-        buf += self.expiration
-        buf += self.op_data
-        buf += self.ex_data
+        # buf = b""
+        # buf += self.ref_block_num
+        # buf += self.ref_block_prefix
+        # buf += self.expiration
+        # buf += self.op_data
+        # buf += self.ex_data
 
-        return buf
+        # return buf
+
+        encoder = Encoder()
+        encoder.start()
+        encoder.write(self.chain_id)
+        encoder.write(self.ref_block_num, Numbers.OctetString)
+        encoder.write(self.ref_block_prefix, Numbers.OctetString)
+        encoder.write(self.expiration, Numbers.OctetString)
+        encoder.write(self.op_data, Numbers.OctetString)
+        encoder.write(self.ex_data, Numbers.OctetString)
+
+        return encoder.output()
