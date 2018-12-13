@@ -58,7 +58,7 @@ void initTxContext(txProcessingContext_t *context,
 }
 
 uint8_t readTxByte(txProcessingContext_t *context) {
-    PRINTF("enter readTxByte");
+    PRINTF("stream: enter readTxByte\n");
     uint8_t data;
     if (context->commandLength < 1) {
         PRINTF("readTxByte Underflow\n");
@@ -67,9 +67,44 @@ uint8_t readTxByte(txProcessingContext_t *context) {
     data = *context->workBuffer;
     context->workBuffer++;
     context->commandLength--;
-    PRINTF("exit readtxbyte");
+    PRINTF("stream: exit readtxbyte\n");
     return data;
 }
+
+/**
+ * Process Authorization Number Field. Initializa context action number 
+ * index and context action number. 
+*/
+static void processOperations(txProcessingContext_t *context) {
+    if (context->currentFieldPos < context->currentFieldLength) {
+        uint32_t length = 
+            (context->commandLength <
+                     ((context->currentFieldLength - context->currentFieldPos))
+                ? context->commandLength
+                : context->currentFieldLength - context->currentFieldPos);
+
+        hashTxData(context, context->workBuffer, length);
+
+        // Store data into a buffer
+        os_memmove(context->sizeBuffer + context->currentFieldPos, context->workBuffer, length);
+
+        context->workBuffer += length;
+        context->commandLength -= length;
+        context->currentFieldPos += length;
+    }
+
+    if (context->currentFieldPos == context->currentFieldLength) {
+        unpack_variant32(context->sizeBuffer, context->currentFieldPos + 1, &context->currentAutorizationNumber);
+        context->currentAutorizationIndex = 0;
+        // Reset size buffer
+        os_memset(context->sizeBuffer, 0, sizeof(context->sizeBuffer));
+
+        // Move to next state
+        context->state++;
+        context->processingField = false;
+    }
+}
+
 
 static void processTokenTransfer(txProcessingContext_t *context) {
     context->content->argumentCount = 3;
@@ -336,8 +371,9 @@ static void processZeroSizeField(txProcessingContext_t *context) {
     if (context->currentFieldPos == context->currentFieldLength) {
         uint32_t sizeValue = 0;
         unpack_variant32(context->sizeBuffer, context->currentFieldPos + 1, &sizeValue);
+        PRINTF("stream: processCtxFreeAction Action Number returned  0\n");
         if (sizeValue != 0) {
-            PRINTF("processCtxFreeAction Action Number must be 0\n");
+            PRINTF("stream: processCtxFreeAction Action Number must be 0\n");
             THROW(EXCEPTION);
         }
         // Reset size buffer
@@ -577,7 +613,7 @@ static void processZeroSizeField(txProcessingContext_t *context) {
 // */
 static void processActionData(txProcessingContext_t *context) {
     if (context->currentFieldLength > sizeof(context->actionDataBuffer) - 1) {
-        PRINTF("processActionData data overflow\n");
+        PRINTF("stream: processActionData data overflow\n");
         THROW(EXCEPTION);
     }
 
@@ -647,11 +683,11 @@ static void processActionData(txProcessingContext_t *context) {
 static parserStatus_e processTxInternal(txProcessingContext_t *context) {
     for(;;) {
         if (context->state == TLV_DONE) {
-            PRINTF("stream finished - tlv_done");
+            PRINTF("stream: stream finished - tlv_done\n");
             return STREAM_FINISHED;
         }
         if (context->commandLength == 0) {
-            PRINTF("stream processing - commandlength == 0");
+            PRINTF("stream: stream processing - commandlength == 0\n");
             return STREAM_PROCESSING;
         }
         if (!context->processingField) {
@@ -663,28 +699,28 @@ static parserStatus_e processTxInternal(txProcessingContext_t *context) {
                 context->tlvBuffer[context->tlvBufferPos++] =
                     readTxByte(context);
 
-                PRINTF("about to enter tlvtrydecode");
+                PRINTF("stream: about to enter tlvtrydecode\n");
                 decoded = tlvTryDecode(context->tlvBuffer, context->tlvBufferPos, 
                     &context->currentFieldLength, &valid);
 
                 if (!valid) {
-                    PRINTF("TLV decoding error\n");
+                    PRINTF("stream: TLV decoding error\n");
                     return STREAM_FAULT;
                 }
                 if (decoded) {
-                    PRINTF("Decoded stream");
+                    PRINTF("stream: Decoded stream");
                     break;
                 }
 
                 // Cannot decode yet
                 // Sanity check
                 if (context->tlvBufferPos == sizeof(context->tlvBuffer)) {
-                    PRINTF("TLV pre-decode logic error\n");
+                    PRINTF("stream: TLV pre-decode logic error\n");
                     return STREAM_FAULT;
                 }
             }
             if (!decoded) {
-                PRINTF("stream not decoded still processing");
+                PRINTF("stream: stream not decoded still processing\n");
                 return STREAM_PROCESSING;
             }
             context->currentFieldPos = 0;
@@ -693,31 +729,31 @@ static parserStatus_e processTxInternal(txProcessingContext_t *context) {
         }
         switch (context->state) {
         case TLV_CHAIN_ID:
-            PRINTF("case tlv_chain_id");
+            PRINTF("stream: case tlv_chain_id\n");
         case TLV_HEADER_REF_BLOCK_NUM:
-            PRINTF("case tlv_header_ref_block_num");
-            processField(context);
+            PRINTF("stream: case tlv_header_ref_block_num\n");
+            // processField(context);
             break;
         case TLV_HEADER_REF_BLOCK_PREFIX:
-            PRINTF("case tlv_header_ref_block_prefix");
-            processField(context);
+            PRINTF("stream: case tlv_header_ref_block_prefix\n");
+            // processField(context);
             break;
         case TLV_HEADER_EXPIRATION:
-            PRINTF("case tlv_header_expiration");
+            PRINTF("stream: case tlv_header_expiration\n");
             processField(context);
             break;
         case TLV_TX_OPERATIONS_SIZE:
-            PRINTF("case tlv_tx_operations_size");
+            PRINTF("stream: case tlv_tx_operations_size\n");
             processField(context);
             break;
         case TLV_TX_OPERATIONS_DATA:
-            PRINTF("case tlv_tx_operations_data");
+            PRINTF("stream: case tlv_tx_operations_data\n");
             // processField(context);
-            processActionData(context);
+            // processActionData(context);
             break;
         case TLV_TX_EXTENSION_LIST_SIZE:
-            PRINTF("case tlv_tx_ex_list_size");
-            processZeroSizeField(context);
+            PRINTF("stream: case tlv_tx_ex_list_size\n");
+            // processZeroSizeField(context);
             break;
 
         default:
