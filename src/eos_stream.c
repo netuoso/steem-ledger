@@ -71,41 +71,6 @@ uint8_t readTxByte(txProcessingContext_t *context) {
     return data;
 }
 
-/**
- * Process Authorization Number Field. Initializa context action number 
- * index and context action number. 
-*/
-static void processOperations(txProcessingContext_t *context) {
-    if (context->currentFieldPos < context->currentFieldLength) {
-        uint32_t length = 
-            (context->commandLength <
-                     ((context->currentFieldLength - context->currentFieldPos))
-                ? context->commandLength
-                : context->currentFieldLength - context->currentFieldPos);
-
-        hashTxData(context, context->workBuffer, length);
-
-        // Store data into a buffer
-        os_memmove(context->sizeBuffer + context->currentFieldPos, context->workBuffer, length);
-
-        context->workBuffer += length;
-        context->commandLength -= length;
-        context->currentFieldPos += length;
-    }
-
-    if (context->currentFieldPos == context->currentFieldLength) {
-        unpack_variant32(context->sizeBuffer, context->currentFieldPos + 1, &context->currentAutorizationNumber);
-        context->currentAutorizationIndex = 0;
-        // Reset size buffer
-        os_memset(context->sizeBuffer, 0, sizeof(context->sizeBuffer));
-
-        // Move to next state
-        context->state++;
-        context->processingField = false;
-    }
-}
-
-
 static void processTokenTransfer(txProcessingContext_t *context) {
     context->content->argumentCount = 3;
     uint32_t bufferLength = context->currentActionDataBufferLength;
@@ -391,38 +356,39 @@ static void processZeroSizeField(txProcessingContext_t *context) {
  * do additional processing: Read actual number of actions encoded in buffer.
  * Throw exception if number is not '1'.
 */
-// static void processActionListSizeField(txProcessingContext_t *context) {
-//     if (context->currentFieldPos < context->currentFieldLength) {
-//         uint32_t length = 
-//             (context->commandLength <
-//                      ((context->currentFieldLength - context->currentFieldPos))
-//                 ? context->commandLength
-//                 : context->currentFieldLength - context->currentFieldPos);
+static void processOperationsListSizeField(txProcessingContext_t *context) {
+    if (context->currentFieldPos < context->currentFieldLength) {
+        uint32_t length = 
+            (context->commandLength <
+                     ((context->currentFieldLength - context->currentFieldPos))
+                ? context->commandLength
+                : context->currentFieldLength - context->currentFieldPos);
 
-//         hashTxData(context, context->workBuffer, length);
+        hashTxData(context, context->workBuffer, length);
 
-//         // Store data into a buffer
-//         os_memmove(context->sizeBuffer + context->currentFieldPos, context->workBuffer, length);
+        // Store data into a buffer
+        os_memmove(context->sizeBuffer + context->currentFieldPos, context->workBuffer, length);
 
-//         context->workBuffer += length;
-//         context->commandLength -= length;
-//         context->currentFieldPos += length;
-//     }
+        context->workBuffer += length;
+        context->commandLength -= length;
+        context->currentFieldPos += length;
+    }
 
-//     if (context->currentFieldPos == context->currentFieldLength) {
-//         uint32_t sizeValue = 0;
-//         unpack_variant32(context->sizeBuffer, context->currentFieldPos + 1, &sizeValue);
-//         if (sizeValue != 1) {
-//             PRINTF("processActionListSizeField Action Number must be 1\n");
-//             THROW(EXCEPTION);
-//         }
-//         // Reset size buffer
-//         os_memset(context->sizeBuffer, 0, sizeof(context->sizeBuffer));
+    if (context->currentFieldPos == context->currentFieldLength) {
+        uint32_t sizeValue = 0;
+        unpack_variant32(context->sizeBuffer, context->currentFieldPos + 1, &sizeValue);
+        // STEEM: Commented this check out because there can be multiple operations
+        // if (sizeValue != 1) {
+        //     PRINTF("processOperationsListSizeField Action Number must be 1\n");
+        //     THROW(EXCEPTION);
+        // }
+        // Reset size buffer
+        os_memset(context->sizeBuffer, 0, sizeof(context->sizeBuffer));
 
-//         context->state++;
-//         context->processingField = false;
-//     }
-// }
+        context->state++;
+        context->processingField = false;
+    }
+}
 
 /**
  * Process Action Account Field. Cache a data of the field in order to 
@@ -459,32 +425,32 @@ static void processZeroSizeField(txProcessingContext_t *context) {
  * Process Action Name Field. Cache a data of the field in order to 
  * display it for validation.
 */
-// static void processActionName(txProcessingContext_t *context) {
-//     if (context->currentFieldPos < context->currentFieldLength) {
-//         uint32_t length = 
-//             (context->commandLength <
-//                      ((context->currentFieldLength - context->currentFieldPos))
-//                 ? context->commandLength
-//                 : context->currentFieldLength - context->currentFieldPos);
+static void processActionName(txProcessingContext_t *context) {
+    if (context->currentFieldPos < context->currentFieldLength) {
+        uint32_t length = 
+            (context->commandLength <
+                     ((context->currentFieldLength - context->currentFieldPos))
+                ? context->commandLength
+                : context->currentFieldLength - context->currentFieldPos);
 
-//         hashTxData(context, context->workBuffer, length);
+        hashTxData(context, context->workBuffer, length);
 
-//         uint8_t *pAction = (uint8_t *)&context->contractActionName;
-//         os_memmove(pAction + context->currentFieldPos, context->workBuffer, length);
+        uint8_t *pAction = (uint8_t *)&context->contractActionName;
+        os_memmove(pAction + context->currentFieldPos, context->workBuffer, length);
 
-//         context->workBuffer += length;
-//         context->commandLength -= length;
-//         context->currentFieldPos += length;
-//     }
+        context->workBuffer += length;
+        context->commandLength -= length;
+        context->currentFieldPos += length;
+    }
 
-//     if (context->currentFieldPos == context->currentFieldLength) {
-//         context->state++;
-//         context->processingField = false;
+    if (context->currentFieldPos == context->currentFieldLength) {
+        context->state++;
+        context->processingField = false;
 
-//         os_memset(context->content->action, 0, sizeof(context->content->action));
-//         name_to_string(context->contractActionName, context->content->action, sizeof(context->content->action));
-//     }
-// }
+        os_memset(context->content->action, 0, sizeof(context->content->action));
+        name_to_string(context->contractActionName, context->content->action, sizeof(context->content->action));
+    }
+}
 
 /**
  * Process Authorization Number Field. Initializa context action number 
@@ -611,9 +577,9 @@ static void processZeroSizeField(txProcessingContext_t *context) {
 /**
  * Process current action data field and store in into data buffer.
 // */
-static void processActionData(txProcessingContext_t *context) {
+static void processOperationsData(txProcessingContext_t *context) {
     if (context->currentFieldLength > sizeof(context->actionDataBuffer) - 1) {
-        PRINTF("stream: processActionData data overflow\n");
+        PRINTF("stream: processOperationsData data overflow\n");
         THROW(EXCEPTION);
     }
 
@@ -708,7 +674,7 @@ static parserStatus_e processTxInternal(txProcessingContext_t *context) {
                     return STREAM_FAULT;
                 }
                 if (decoded) {
-                    PRINTF("stream: Decoded stream");
+                    PRINTF("stream: Decoded stream\n");
                     break;
                 }
 
@@ -732,24 +698,19 @@ static parserStatus_e processTxInternal(txProcessingContext_t *context) {
             PRINTF("stream: case tlv_chain_id\n");
         case TLV_HEADER_REF_BLOCK_NUM:
             PRINTF("stream: case tlv_header_ref_block_num\n");
-            // processField(context);
-            break;
         case TLV_HEADER_REF_BLOCK_PREFIX:
             PRINTF("stream: case tlv_header_ref_block_prefix\n");
-            // processField(context);
-            break;
         case TLV_HEADER_EXPIRATION:
             PRINTF("stream: case tlv_header_expiration\n");
             processField(context);
             break;
         case TLV_TX_OPERATIONS_SIZE:
             PRINTF("stream: case tlv_tx_operations_size\n");
-            processField(context);
+            processOperationsListSizeField(context);
             break;
         case TLV_TX_OPERATIONS_DATA:
             PRINTF("stream: case tlv_tx_operations_data\n");
-            // processField(context);
-            // processActionData(context);
+            processOperationsData(context);
             break;
         case TLV_TX_EXTENSION_LIST_SIZE:
             PRINTF("stream: case tlv_tx_ex_list_size\n");

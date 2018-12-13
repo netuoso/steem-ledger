@@ -36,6 +36,7 @@ name_t buffer_to_name_type(uint8_t *in, uint32_t size) {
 
 uint8_t name_to_string(name_t value, char *out, uint32_t size) {
     if (size < 13) {
+        PRINTF("types: name_to_string underflow");
         THROW(EXCEPTION_OVERFLOW);
     }
 
@@ -112,6 +113,7 @@ uint8_t symbol_to_string(symbol_t sym, char *out, uint32_t size) {
 }
 
 uint8_t asset_to_string(asset_t *asset, char *out, uint32_t size) {
+    PRINTF("types: entering asset");
     if (asset == NULL) {
         THROW(INVALID_PARAMETER);
     }
