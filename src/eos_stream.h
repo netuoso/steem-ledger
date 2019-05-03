@@ -40,6 +40,7 @@ typedef enum txProcessingState_e {
     TLV_TX_OPERATIONS_SIZE,
     TLV_TX_OPERATIONS_DATA,
     TLV_TX_EXTENSION_LIST_SIZE,
+    TLV_TX_EXTENSION_LIST_DATA,
     TLV_DONE
 } txProcessingState_e;
 

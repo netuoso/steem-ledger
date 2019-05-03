@@ -328,7 +328,7 @@ const bagl_element_t ui_approval_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)txContent.contract,
+     "testContract",
      0,
      0,
      0,
@@ -347,7 +347,7 @@ const bagl_element_t ui_approval_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 50},
-     (char *)txContent.action,
+     "testAction",
      0,
      0,
      0,
@@ -357,7 +357,7 @@ const bagl_element_t ui_approval_nanos[] = {
 
     {{BAGL_LABELINE, 0x04, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     (char *)txContent.arg.label,
+     "testArgLabel",
      0,
      0,
      0,
@@ -366,7 +366,7 @@ const bagl_element_t ui_approval_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x04, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)txContent.arg.data,
+     (char *)txContent,
      0,
      0,
      0,
@@ -480,6 +480,8 @@ unsigned int ui_address_nanos_button(unsigned int button_mask,
 
 unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e)
 {
+    // user approved transaction; begin sign
+
     uint8_t privateKeyData[64];
     cx_ecfp_private_key_t privateKey;
     uint32_t tx = 0;
@@ -762,7 +764,7 @@ void handleSign(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
 
     skipWarning = !dataPresent;
     ux_step = 0;
-    ux_step_count = 3 + txContent.argumentCount;
+    ux_step_count = 3 + 1;
     UX_DISPLAY(ui_approval_nanos, ui_approval_prepro);
 
     *flags |= IO_ASYNCH_REPLY;

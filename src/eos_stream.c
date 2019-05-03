@@ -377,11 +377,11 @@ static void processOperationsListSizeField(txProcessingContext_t *context) {
     if (context->currentFieldPos == context->currentFieldLength) {
         uint32_t sizeValue = 0;
         unpack_variant32(context->sizeBuffer, context->currentFieldPos + 1, &sizeValue);
-        // STEEM: Commented this check out because there can be multiple operations
-        // if (sizeValue != 1) {
-        //     PRINTF("processOperationsListSizeField Action Number must be 1\n");
-        //     THROW(EXCEPTION);
-        // }
+        if (sizeValue != 1) {
+            // TODO: Allow more than one operation to be signed at a time
+            PRINTF("processOperationsListSizeField Action Number must be 1\n");
+            THROW(EXCEPTION);
+        }
         // Reset size buffer
         os_memset(context->sizeBuffer, 0, sizeof(context->sizeBuffer));
 
@@ -522,27 +522,27 @@ static void processActionName(txProcessingContext_t *context) {
 // }
 
 
-// static void processUnknownActionDataSize(txProcessingContext_t *context) {
-//     if (context->currentFieldPos < context->currentFieldLength) {
-//         uint32_t length = 
-//             (context->commandLength <
-//                      ((context->currentFieldLength - context->currentFieldPos))
-//                 ? context->commandLength
-//                 : context->currentFieldLength - context->currentFieldPos);
+static void processUnknownActionDataSize(txProcessingContext_t *context) {
+    if (context->currentFieldPos < context->currentFieldLength) {
+        uint32_t length = 
+            (context->commandLength <
+                     ((context->currentFieldLength - context->currentFieldPos))
+                ? context->commandLength
+                : context->currentFieldLength - context->currentFieldPos);
 
-//         hashTxData(context, context->workBuffer, length);
-//         hashActionData(context, context->workBuffer, length);
+        hashTxData(context, context->workBuffer, length);
+        hashActionData(context, context->workBuffer, length);
 
-//         context->workBuffer += length;
-//         context->commandLength -= length;
-//         context->currentFieldPos += length;
-//     }
+        context->workBuffer += length;
+        context->commandLength -= length;
+        context->currentFieldPos += length;
+    }
 
-//     if (context->currentFieldPos == context->currentFieldLength) {
-//         context->state++;
-//         context->processingField = false;
-//     }
-// }
+    if (context->currentFieldPos == context->currentFieldLength) {
+        context->state++;
+        context->processingField = false;
+    }
+}
 
 
 /**
@@ -696,25 +696,33 @@ static parserStatus_e processTxInternal(txProcessingContext_t *context) {
         switch (context->state) {
         case TLV_CHAIN_ID:
             PRINTF("stream: case tlv_chain_id\n");
+            // processField(context);
+            break;
         case TLV_HEADER_REF_BLOCK_NUM:
             PRINTF("stream: case tlv_header_ref_block_num\n");
+            // processField(context);
+            break;
         case TLV_HEADER_REF_BLOCK_PREFIX:
             PRINTF("stream: case tlv_header_ref_block_prefix\n");
+            // processField(context);
         case TLV_HEADER_EXPIRATION:
             PRINTF("stream: case tlv_header_expiration\n");
-            processField(context);
+            // processField(context);
             break;
         case TLV_TX_OPERATIONS_SIZE:
             PRINTF("stream: case tlv_tx_operations_size\n");
-            processOperationsListSizeField(context);
-            break;
+            // processField(context);
         case TLV_TX_OPERATIONS_DATA:
             PRINTF("stream: case tlv_tx_operations_data\n");
-            processOperationsData(context);
+            // processField(context);
             break;
         case TLV_TX_EXTENSION_LIST_SIZE:
             PRINTF("stream: case tlv_tx_ex_list_size\n");
-            // processZeroSizeField(context);
+            // processField(context);
+            break;
+        case TLV_TX_EXTENSION_LIST_DATA:
+            PRINTF("stream: case tlv_tx_ex_list_data\n");
+            // processField(context);
             break;
 
         default:

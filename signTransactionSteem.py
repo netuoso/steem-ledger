@@ -18,12 +18,20 @@
 ********************************************************************************/
 """
 
-from binascii import hexlify, unhexlify
+import os
 import json
 import struct
-from steemBase import Transaction
-from ledgerblue.comm import getDongle
 import argparse
+
+from binascii import hexlify, unhexlify
+from ledgerblue.comm import getDongle
+
+from steemBase import Transaction
+
+from beem import Steem
+from beembase.signedtransactions import Signed_Transaction
+from beemgraphenebase.base58 import Base58
+from beem.account import PrivateKey
 
 def parse_bip32_path(path):
     if len(path) == 0:
@@ -60,7 +68,7 @@ with file(args.file) as f:
     tx = Transaction.parse(obj)
     tx_raw = tx.encode()
     signData = tx_raw
-    print hexlify(tx_raw)
+    # print hexlify(tx_raw)
 
     dongle = getDongle(True)
     offset = 0
@@ -81,5 +89,30 @@ with file(args.file) as f:
             apdu = "87048000".decode('hex') + chr(totalSize) + chunk
 
         offset += len(chunk)
-        result = dongle.exchange(bytes(apdu))
-        print hexlify(result)
+        # result = dongle.exchange(bytes(apdu))
+        print hexlify(apdu)
+
+# tx = {
+#   "ref_block_num": 23196,
+#   "ref_block_prefix": 114668414,
+#   "expiration": "2018-12-18T05:11:12",
+#   "operations": [[
+#       "vote",{
+#         "voter": "nettybot",
+#         "author": "the4thmusketeer",
+#         "permlink": "influencers-in-crypto",
+#         "weight": 10000
+#       }
+#     ]
+#   ],
+#   "extensions": [],
+#   "signatures": [hexlify(result)]
+# }
+
+
+# print(hexlify(result))
+
+#stm = Steem(nodes=["https://api.steemit.com"])
+# command = "curl -s --data '{\"id\":10,\"jsonrpc\":\"2.0\",\"method\":\"call\",\"params\":[\"network_broadcast_api\",\"broadcast_transaction_synchronous\",[{\"ref_block_num\": 23196,\"ref_block_prefix\": 114668414,\"expiration\": \"2018-12-18T05:11:12\",\"operations\": [[\"vote\",{\"voter\": \"nettybot\",\"author\": \"the4thmusketeer\",\"permlink\": \"influencers-in-crypto\",\"weight\": 10000    }  ]],\"extensions\": [],\"signatures\": [\"2058c8ddec40c0e203ecf84097d75ffe10be0afa7fa492aa2b25754ef3a685ec132443e3db48d7c751b4cf48e84f523ac6a0c84b2151e16996975bc255d712b1e1\"]}]]}' https://api.steemit.com"
+#print(os.system(command))
+

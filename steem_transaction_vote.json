@@ -1,13 +1,12 @@
 {
-  "ref_block_num": 36029,
-  "ref_block_prefix": 1164960351,
-  "expiration": "2016-08-08T12:24:17",
-  "operations": [
-    ["vote",
-      {
-        "author": "xeroc",
-        "permlink": "piston",
-        "voter": "xeroc",
+  "ref_block_num": 23196,
+  "ref_block_prefix": 114668414,
+  "expiration": "2018-12-18T05:11:12",
+  "operations": [[
+      "vote",{
+        "voter": "nettybot",
+        "author": "the4thmusketeer",
+        "permlink": "influencers-in-crypto",
         "weight": 10000
       }
     ]

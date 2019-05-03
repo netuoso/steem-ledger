@@ -266,9 +266,9 @@ class Transaction:
 
         tx.chain_id = unhexlify("00" * 32)
 
+        tx.ref_block_num = struct.pack('<H', json['ref_block_num'])
         tx.expiration = struct.pack("<I", timegm(time.strptime((json["expiration"] + "UTC"), '%Y-%m-%dT%H:%M:%S%Z')))
-        tx.ref_block_num = struct.pack('H', json['ref_block_num'])
-        tx.ref_block_prefix = struct.pack('I', json['ref_block_prefix'])
+        tx.ref_block_prefix = struct.pack('<I', json['ref_block_prefix'])
 
         # prefex operations with length
         tx.op_data = Transaction.pack_fc_uint(len(json['operations']))
@@ -295,15 +295,6 @@ class Transaction:
         return tx
 
     def encode(self):
-        # buf = b""
-        # buf += self.ref_block_num
-        # buf += self.ref_block_prefix
-        # buf += self.expiration
-        # buf += self.op_data
-        # buf += self.ex_data
-
-        # return buf
-
         encoder = Encoder()
         encoder.start()
         encoder.write(self.chain_id)
